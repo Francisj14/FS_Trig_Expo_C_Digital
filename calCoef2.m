@@ -1,5 +1,5 @@
 function Coef = calCoef(v,f);
-syms t real; %Declaración de la Variable 't' como simbólica
+syms t real; %DeclaraciÃ³n de la Variable 't' como simbÃ³lica
 syms n integer;
 f=sym(f);
 P=max(v)-min(v);
@@ -28,3 +28,5 @@ bn=simplify(2*bn/P);
 
 Coef = [a0 an bn];
 size(Coef);
+
+CÃ¡lculo del coeficiente..
