@@ -1,0 +1,127 @@
+function T = fxGraph(v, f,NumArm); %Entrada el periodo de la función, y la función 
+
+%Función que gráfica la 'función' de entrada para tres periodos
+
+%Se definen las variables que se usarán en el programa
+
+dx = 0.01;
+syms t; %Definición de la variable 't' como simbólica
+syms n; %Definición de 'n' (número del armónico como variable simbólica)
+piS = pi;
+funArm = 0;
+[Fm Fn] = size(f); %Guarda el tamaño del vector de en la variables i y j
+[Vm Vn] = size(v); %Guarda el tamaño del vector de en la variables m y n
+T = v(Vn) - v(1); %calcula el periodo de la función
+
+
+x1 = v(1):dx:v(Vn); %Define la gráfica para un intervalo en x
+[Xm Xn] = size(x1);
+
+
+for p1=1:Vn-1 %Calculo del coeficiente a0 de fourier
+    if p1 == 1
+        a0=int(f(p1)*t^0*(2/(sym(v(Vn))-sym(v(1))))/2,v(p1),v(p1+1)); %Realiza la integral definida para cada unos de los intervalos de la función de entrada
+        %t^0 se agrega para poder evaluar la integral en caso que no haya
+        %variables en la función. Solución a limitantes del toolbox
+        %simbólico de matlab
+    elseif p1 >=1
+        a0=int(f(p1)*t^0,v(p1),v(p1+1))+a0; %Realiza los integrales para todos los intervalos
+    end
+end 
+
+for p1=1:Vn-1 %Calculo del coeficiente an de fourier
+    %Realiza la integral definida para cada unos de los intervalos de la
+    %función de entrada
+    if p1 == 1
+        %an = int(f(p1)*(2/(sym(v(Vn))-sym(v(1))))*cos((2*n*piS)*t/(sym(v(Vn))-sym(v(1)))),t,v(p1),v(p1+1))
+        an = int(f(p1)*cos((2*n*pi)*t/(v(Vn)-v(1)))*(2/(v(Vn)-v(1))),t,v(p1),v(p1+1));
+    elseif p1 >=1
+        an = int(f(p1)*cos((2*n*piS*t)/(sym(v(Vn))-sym(v(1)))),t,v(p1),v(p1+1))+an; %Realiza los integrales para todos los intervalos
+    end
+end
+
+%an=simplify(an)
+%an = latex(an)
+%an = symsum(an) 
+%an=simple(an)
+for p1=1:Vn-1 %Calculo del coeficiente bn de fourier
+    if p1 == 1
+        bn =  int(f(p1)*sin((2*n*piS)*t/(sym(v(Vn))-sym(v(1))))*(2/(sym(v(Vn))-sym(v(1)))),t,v(p1),v(p1+1));%Realiza la integral definida para cada unos de los intervalos de la función de entrada *(2/(sym(v(Vn))-sym(v(1))))*sin((2*n*piS)
+    elseif p1 >=1
+        bn = int(f(p1)*sin((2*n*piS*t)/(sym(v(Vn))-sym(v(1)))),t,v(p1),v(p1+1))+ bn; %Realiza los integrales para todos los intervalos
+    end
+end 
+
+%Proceso para calcular la amplitud de cada uno de los coeficientes, tambien
+%se podría usando fft().
+for i=1:NumArm
+    n = i;
+    Amp(i) = eval(sqrt(an^2+bn^2));
+    b(i)=eval(bn);
+    a(i)=eval(an);
+    syms n ;
+end
+
+subplot(2,2,1)
+
+
+% Ciclo para calcular cada armónica de la función y sumarlas
+for i=1:NumArm
+    syms t
+    funArm = Amp(i)*cos((i*2*pi/(v(Vn)-v(1))*t)-(atan(b(i)/a(i))))+funArm;
+    armonicos(i)=funArm;
+    ezplot(funArm,[v(1)-T,v(Vn)+T]);
+    hold on
+end
+
+funArm = funArm + a0;
+
+%funArm = -funArm
+
+
+subplot(2,2,2)
+title(latex(an))
+ezplot(funArm,[v(1)-T,v(Vn)+T])
+hold on
+for p1=1:Vn-1 %Genera la función ingresada para un periodo
+    for p=1:Xn
+        if ((v(p1)<=x1(p)) && (x1(p)<=v(p1+1)))
+            syms t;
+            yt = f(p1)+t; %Esta variable t se agrega aquí y se elimina mas abajo.    
+            t = x1(p);
+            y(p) = eval(yt);
+            y(p) = y(p)-t; %Operación necesaria para evaluación simbólica de constantes (eval() no recibe Double)
+        end
+    end
+end
+x0 = v(1)-T:dx:v(1);
+x2 = v(Vn):dx:v(Vn)+T;    
+
+
+
+x = [x0 x1 x2]; %Creación de datos para la función en tres periodos
+y = [y y y]; 
+[Xfm Xfn] = size(x)
+subplot(2,2,4)
+title('Plot 3D armónicos')
+for i=1:NumArm
+    funArm1 = Amp(i)*cos((i*2*pi/(v(Vn)-v(1))*x)-(atan(b(i)/a(i))));
+    u=ones(1,Xfn);
+    plot3(u*i,x,funArm1)
+    hold on
+end
+hold off    
+
+
+subplot(2,2,3)
+titla('Gráfica en Función del Tiempo')
+plot(x,y);
+%subplot(2,2,4)
+%stem(Amp)
+hold off
+
+
+
+
+
+
