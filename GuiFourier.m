@@ -113,7 +113,9 @@ f=str2sym(f)
 [VVnv VVmv]=size(v);
 [VVnf VVmf]=size(f);
 
-
+          %%PRUEBA DE GITHUB
+          display("Comunicaciones avanzadas")
+          %%%%%%%%%%%
 
 if (VVmv == VVmf+1)
     fn = fnGraf(v,f,div);
